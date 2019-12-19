@@ -1,7 +1,10 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import pandas as pd
-from skimage.measure import LineModelND, ransac
+# from skimage.measure import LineModelND, ransac
+from sklearn import linear_model, datasets
+from skimage.measure import ransac, LineModelND
+
 import math
 
 df = pd.read_csv('scanData.txt',delimiter=',')
