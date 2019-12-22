@@ -23,7 +23,7 @@ lr = linear_model.LinearRegression()
 lr.fit(X, y)
 
 # Robustly fit linear model with RANSAC algorithm
-ransac = linear_model.RANSACRegressor()
+ransac = linear_model.RANSACRegressor(max_trials=1000)
 ransac.fit(X, y)
 inlier_mask = ransac.inlier_mask_
 outlier_mask = np.logical_not(inlier_mask)
