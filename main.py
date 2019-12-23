@@ -7,9 +7,7 @@ from skimage.measure import ransac, LineModelND
 
 import math
 
-df = pd.read_csv('scanData.txt',delimiter=',')
-x = df.values[:,0]
-y = df.values[:,1]
+
 
 df = pd.read_csv('scanData.txt',delimiter=',')
 angle = df.values[:,0]
@@ -63,6 +61,6 @@ ax.plot(data[inliers, 0], data[inliers, 1], '.b', alpha=0.6,
 ax.plot(data[outliers, 0], data[outliers, 1], '.r', alpha=0.6,
         label='Outlier data')
 ax.plot(line_x, line_y, '-k', label='Line model from all data')
-ax.plot(line_x, line_y_robust, '-b', label='Robust line model')
+ax.scatter(line_x, line_y_robust, '-b', label='Robust line model')
 ax.legend(loc='lower left')
 plt.show()
