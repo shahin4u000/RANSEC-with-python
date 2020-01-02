@@ -31,7 +31,7 @@ ransac.fit(x, y)
 line_X = np.arange(x.min(), x.max())[:, np.newaxis]
 print(line_X)
 line_y = lr.predict(line_X)
-line_y_ransac = ransac.predict(line_X)
+line_y_ransac = ransac.predict(line_y)
 print(line_y_ransac)
 plt.scatter(x,y, color='yellowgreen', marker='.',
             label='Inliers')
