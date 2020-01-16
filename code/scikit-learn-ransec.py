@@ -7,6 +7,7 @@ from sklearn.linear_model import RANSACRegressor, LinearRegression
 
 # getting data from a text file
 df = pd.read_csv('scanData.txt',delimiter=',')
+
 angle = df.values[:,0]
 distance = df.values[:,1]
 cartesian = [(r*math.cos(phi*math.pi/180), r*math.sin(phi*math.pi/180)) for r, phi in zip(distance, angle)]
@@ -24,12 +25,12 @@ b= y
 x_shape = int(np.max(a) - np.min(a))
 y_shape = int(np.max(b) - np.min(b))
 
-im = np.zeros((x_shape+1, y_shape+1))
+#im = np.zeros((x_shape+1, y_shape+1))
 
-indices = np.stack([a-1,b-1], axis =1).astype(int)
-im[indices[:,0], indices[:,1]] = 1
+#indices = np.stack([a-1,b-1], axis =1).astype(int)
+#im[indices[:,0], indices[:,1]] = 1
 
-plt.imshow(im)
+#plt.imshow(im)
 
 X=x.reshape(-1, 1)
 Y=y.reshape(-1, 1)
@@ -41,7 +42,7 @@ Y=y.reshape(-1, 1)
 
 ransac = RANSACRegressor(LinearRegression(),
                          max_trials=15000,
-                         min_samples=2,
+                         min_samples=200,
                          #residual_metric=lambda x: np.sum(np.abs(x), axis=1),
                          #residual_threshold=20.0,
                          random_state=0)
@@ -56,9 +57,7 @@ plt.scatter(X[outlier_mask], y[outlier_mask], c='lightgreen', marker='.', label=
 
 plt.scatter(X[inlier_mask], y[inlier_mask], c='blue', marker='.', label='Inliers')
 plt.plot(line_X, line_y_ransac, color='red')
-plt.xlabel('Average number of rooms [RM]')
-plt.ylabel('Price in $1000\'s [MEDV]')
-plt.legend(loc='upper left')
+
 
 plt.tight_layout()
 plt.show()

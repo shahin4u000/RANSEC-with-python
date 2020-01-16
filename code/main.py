@@ -47,11 +47,11 @@ model.estimate(data)    # estimate random data
 
 # robustly fit line only using inlier data with RANSAC algorithm
 model_robust, inliers = ransac(data, LineModelND, min_samples=2,
-                               residual_threshold=10, max_trials=1000)
+                               residual_threshold=1, max_trials=1000)
 outliers = inliers == False
 
 # generate coordinates of estimated models
-line_x = np.arange(-250, 250)
+line_x = np.arange(data.min(), data.max())
 line_y = model.predict_y(line_x)
 line_y_robust = model_robust.predict_y(line_x)
 print(line_y_robust)
