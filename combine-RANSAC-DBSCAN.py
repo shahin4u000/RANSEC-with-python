@@ -58,7 +58,7 @@ while dataSize >=20:
         inliersArray = detectedByRansac
         print('inliersArray: ', inliersArray)
     else :
-        if detectedByRansac.size >=30:
+        if detectedByRansac.size >=10:
             inliersArray = np.concatenate((inliersArray,detectedByRansac))
             print('inliersArray: ', inliersArray)
     #update the data with outliers and remove inliers
