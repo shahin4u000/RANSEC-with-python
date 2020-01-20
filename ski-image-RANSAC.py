@@ -2,16 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from skimage.measure import ransac, LineModelND, CircleModel
+from skimage.feature import peak_local_max, corner_peaks, corner_shi_tomasi
 import math
 
-df = pd.read_csv(r'scanda-data\capture1.csv',delimiter=',')
+df = pd.read_csv(r'C:\Users\kgoni\Desktop\RANSEC-with-python\scan-data\capture1.csv',delimiter=',')
 angle = df.values[:,0]
 distance = df.values[:,1]
 
 x= angle
 y= distance
 
-cartesian = [(r*math.cos(phi*math.pi/180), r*math.sin(phi*math.pi/180)) for r, phi in zip(distance, angle)]
+cartesian = [( r*math.sin(phi*math.pi/180),r*math.cos(phi*math.pi/180)) for r, phi in zip(distance, angle)]
 #print(x,y)
 x, y = map(list, zip(*cartesian))
 #print(cartesian)
@@ -43,7 +44,7 @@ while dataSize >=20:
     # generate coordinates of estimated models
     line_x = np.arange(x.min(), x.max()) #[:, np.newaxis]
     line_y = model.predict_y(line_x)
-    line_y_robust = model_robust.predict_y(line_x)
+    line_y_robust = model_robust.predict_y(line_y)
     detectedByRansac= np.column_stack([data[inliers, 0],data[inliers, 1]])
     print('detectedByRansac: ', detectedByRansac)
     
@@ -70,9 +71,10 @@ while dataSize >=20:
     ax.plot(inliersArray[:, 0], inliersArray[:, 1], '.b', alpha=0.6,
             label='Inlier data')
     ax.legend(loc='top left')
-    plt.show()
-    plt.pause(0.0001) 
+    '''plt.show()
+    plt.pause(0.0001)'''  
 
+print("hi corner; ",corner_peaks(corner_shi_tomasi(inliersArray), min_distance=1))
 fig, ax = plt.subplots()
 ax.plot(data[:, 0], data[:, 1], '.r', alpha=0.6,
         label='Outlier data')
