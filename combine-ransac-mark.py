@@ -6,7 +6,7 @@ from skimage.feature import peak_local_max, corner_peaks, corner_shi_tomasi
 import math
 import cv2
 
-df = pd.read_csv(r'C:\Users\kgoni\Desktop\RANSEC-with-python\scan-data\capture1.csv',delimiter=',')
+df = pd.read_csv(r'scan-data/capture2.csv',delimiter=',')
 angle = df.values[:,0]
 distance = df.values[:,1]
                                                                              
@@ -68,15 +68,10 @@ while dataSize >=20:
 
 ################
 print("hi :", inliersArray.size)
+inliersArray = [i for i in data1 if i in inliersArray]
 Thetas = []
 Ranges = []
 maxRange = 0
-
-""" r = np.sqrt(inliersArray[0]**2+inliersArray[1]**2)
-t = np.arctan2(inliersArray[1],inliersArray[0])
-print("r: ", r)
-print("t:", t)
-csv_reader = zip(r,t) """
 
 print("i am in polar: ",inliersArray)
 for row in inliersArray:
@@ -117,7 +112,7 @@ for i in range(1,len(Thetas)):
     y = theta
     pt3 = (cx + x, cy - y)
     triangleCnt = np.array( [pt1, pt2, pt3] )
-    cv2.drawContours(im, [triangleCnt.astype(int)], 0, 255, 0)
+    cv2.drawContours(im, [triangleCnt.astype(int)], 0, 255, -1)
 cv2.imwrite('result.png', im)
 
 
