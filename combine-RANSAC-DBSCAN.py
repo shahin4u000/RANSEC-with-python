@@ -58,15 +58,15 @@ while dataSize >=20:
         inliersArray = detectedByRansac
         print('inliersArray: ', inliersArray)
     else :
-        if detectedByRansac.size >=10:
+        if detectedByRansac.size >=30:
             inliersArray = np.concatenate((inliersArray,detectedByRansac))
             print('inliersArray: ', inliersArray)
     #update the data with outliers and remove inliers
     
     
     data = np.column_stack([data[outliers, 0],data[outliers, 1]])
-    print("inliers: ", inliers)
-    print("wihtout: ", data)
+    #print("inliers: ", inliers)
+    #print("wihtout: ", data)
     dataSize = data.size
     fig, ax = plt.subplots()
     ####
