@@ -15,8 +15,26 @@ df = pd.read_csv(r'scan-data\capture1.csv',delimiter=',')
 
 angle = df.values[:,0]
 distance = df.values[:,1]
-X = [(r*math.cos(phi*math.pi/180), r*math.sin(phi*math.pi/180)) for r, phi in zip(distance, angle)]
 
+x= angle
+y= distance
+
+cartesian = [( r*math.sin(phi*math.pi/180),r*math.cos(phi*math.pi/180)) for r, phi in zip(distance, angle)]
+#print(x,y)
+x, y = map(list, zip(*cartesian))
+#print(cartesian)
+
+# coverting this into 2d array
+x=  np.array(x)
+y=  np.array(y)
+
+x=x.reshape(-1, 1)
+y=y.reshape(-1, 1)
+
+
+data = np.column_stack([x, y])
+
+X = StandardScaler().fit_transform(data)
 db = DBSCAN(eps=0.3, min_samples=10).fit(X)
 core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
 core_samples_mask[db.core_sample_indices_] = True
@@ -46,11 +64,11 @@ for k, col in zip(unique_labels, colors):
 
     class_member_mask = (labels == k)
 
-    xy = X[class_member_mask & core_samples_mask]
+    xy = data[class_member_mask & core_samples_mask]
     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
              markeredgecolor='k', markersize=5)
 
-    xy = X[class_member_mask & ~core_samples_mask]
+    xy = data[class_member_mask & ~core_samples_mask]
     plt.plot(xy[:, 0], xy[:, 1], 'o', markerfacecolor=tuple(col),
              markeredgecolor='k', markersize=6)
 
