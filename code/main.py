@@ -1,15 +1,14 @@
-import numpy as np
-from matplotlib import pyplot as plt
-import pandas as pd
-# from skimage.measure import LineModelND, ransac
-from sklearn import linear_model, datasets
-from skimage.measure import ransac, LineModelND
-
 import math
 
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+# from skimage.measure import LineModelND, ransac
+from skimage.measure import ransac, LineModelND
+import os
 
 
-df = pd.read_csv('scanData.txt',delimiter=',')
+df = pd.read_csv('capture2.csv', delimiter=',')
 angle = df.values[:,0]
 distance = df.values[:,1]
 
@@ -29,17 +28,7 @@ x, y = map(list, zip(*cartesian))
 data = np.column_stack([x, y])
 
 print(data)
-#print("x: ", x ,  " y: ", y)
-# add gaussian noise to coordinates
-#noise = np.random.normal(size=data.shape)
-#data += 0.5 * noise
-#data[::2] += 5 * noise[::2]
-#data[::4] += 20 * noise[::4]
 
-# add faulty data
-#faulty = np.array(30 * [(180., -100)])
-#faulty += 10 * np.random.normal(size=faulty.shape)
-#data[:faulty.shape[0]] = faulty
 
 # fit line using all data
 model = LineModelND()
