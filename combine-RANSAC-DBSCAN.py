@@ -10,7 +10,7 @@ from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 
 
-df = pd.read_csv(r'C:\Users\kgoni\Desktop\RANSEC-with-python\scan-data\capture2.csv',delimiter=',')
+df = pd.read_csv('capture2.csv',delimiter=',')
 angle = df.values[:,0]
 distance = df.values[:,1]
 
@@ -58,15 +58,15 @@ while dataSize >=20:
         inliersArray = detectedByRansac
         print('inliersArray: ', inliersArray)
     else :
-        if detectedByRansac.size >=10:
+        if detectedByRansac.size >=30:
             inliersArray = np.concatenate((inliersArray,detectedByRansac))
             print('inliersArray: ', inliersArray)
     #update the data with outliers and remove inliers
     
     
     data = np.column_stack([data[outliers, 0],data[outliers, 1]])
-    print("inliers: ", inliers)
-    print("wihtout: ", data)
+    #print("inliers: ", inliers)
+    #print("wihtout: ", data)
     dataSize = data.size
     fig, ax = plt.subplots()
     ####
