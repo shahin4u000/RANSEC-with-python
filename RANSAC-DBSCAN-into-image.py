@@ -11,7 +11,7 @@ from skimage.measure import ransac, LineModelND, CircleModel
 import math
 import cv2
 
-df = pd.read_csv('capture3.csv',delimiter=',')
+df = pd.read_csv(r'scan-data\capture1.csv',delimiter=',')
 
 angle = df.values[:,0]
 distance = df.values[:,1]
@@ -33,8 +33,62 @@ y=y.reshape(-1, 1)
 
 
 data = np.column_stack([x, y])
+data1 = data
 
-X = StandardScaler().fit_transform(data)
+############# RANSAC Start ##################
+inliersArray = np.array([])
+print ("inliersArray", inliersArray)
+dataSize = data.size
+print("data size", dataSize)
+
+while dataSize >=20:    
+    #print('dataSize: ', dataSize)
+    model = LineModelND()
+    model.estimate(data)
+    # robustly fit line only using inlier data with RANSAC algorithm
+    model_robust, inliers = ransac(data, LineModelND, min_samples=2,
+                            residual_threshold=50, max_trials=10000)
+    outliers = inliers == False
+    # generate coordinates of estimated models
+    line_x = np.arange(x.min(), x.max()) #[:, np.newaxis]
+    line_y = model.predict_y(line_x)
+    line_y_robust = model_robust.predict_y(line_y)
+    detectedByRansac= np.column_stack([data[inliers, 0],data[inliers, 1]])
+    #print('detectedByRansac: ', detectedByRansac)
+    
+    #store the inliers into inliers array
+    if inliersArray.size == 0:            
+        inliersArray = detectedByRansac
+        #print('inliersArray: ', inliersArray)
+    elif detectedByRansac.size >=25:
+        inliersArray = np.concatenate((inliersArray,detectedByRansac))
+        #print('inliersArray: ', inliersArray)
+    #update the data with outliers and remove inliers
+    
+    
+    data = np.column_stack([data[outliers, 0],data[outliers, 1]])
+    #print("inliers: ", inliers)
+    #print("wihtout: ", data)
+    dataSize = data.size
+
+    ## If you want to see how the RANSAC works uncomment the follwoing code
+
+    ''' fig, ax = plt.subplots()
+    ####
+    #### test
+    ax.plot(data[:, 0], data[:, 1], '.r', alpha=0.6,
+            label='Outlier data')
+    ax.plot(inliersArray[:, 0], inliersArray[:, 1], '.b', alpha=0.6,
+            label='Inlier data')
+    ax.legend(loc='top left')
+    plt.show()
+    plt.pause(0.0001)  '''
+
+
+
+########### DBSCAN start ##################
+
+X = StandardScaler().fit_transform(inliersArray)
 db = DBSCAN(eps=0.3, min_samples=10).fit(X)
 core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
 core_samples_mask[db.core_sample_indices_] = True
@@ -49,8 +103,6 @@ n_noise_ = list(labels).count(-1)
 
 print('Estimated number of clusters: %d' % n_clusters_)
 print('Estimated number of noise points: %d' % n_noise_)
-# #############################################################################
-# Plot result
 
 
 # Black removed and is used for noise instead.
@@ -65,12 +117,12 @@ for k, col in zip(unique_labels, colors):
 
     class_member_mask = (labels == k)
     print('class_member_mask: ', class_member_mask)
-    xy = data[class_member_mask & core_samples_mask]
+    xy = inliersArray[class_member_mask & core_samples_mask]
     detectedByDBSCAN= np.column_stack([xy[:, 0], xy[:, 1]])
     
     if finalData.size == 0:
         finalData = detectedByDBSCAN
-    elif detectedByDBSCAN.size >=30:
+    else:
         finalData = np.concatenate((finalData,detectedByDBSCAN))
         print('finalData: ', finalData)
     #update the data with outliers and remove inliers
@@ -87,7 +139,7 @@ Thetas = []
 Ranges = []
 maxRange = 0
 
-
+finalData = [i for i in data1 if i in finalData]
 
 for row in finalData:
     #print("row ",row)
