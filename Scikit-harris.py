@@ -1,3 +1,9 @@
+from matplotlib import pyplot as plt
+
+from skimage import data
+from skimage.feature import corner_harris, corner_subpix, corner_peaks
+from skimage.transform import warp, AffineTransform
+from skimage.draw import ellipse
 import numpy as np
 
 from sklearn.cluster import DBSCAN
@@ -33,63 +39,9 @@ y=y.reshape(-1, 1)
 
 
 data = np.column_stack([x, y])
-data1 = data
 
-############# RANSAC Start ##################
-inliersArray = np.array([])
-print ("inliersArray", inliersArray)
-dataSize = data.size
-print("data size", dataSize)
-
-while dataSize >=20:    
-    #print('dataSize: ', dataSize)
-    model = LineModelND()
-    model.estimate(data)
-    # robustly fit line only using inlier data with RANSAC algorithm
-    model_robust, inliers = ransac(data, LineModelND, min_samples=2,
-                            residual_threshold=60, max_trials=10000)
-    outliers = inliers == False
-    # generate coordinates of estimated models
-    line_x = np.arange(x.min(), x.max()) #[:, np.newaxis]
-    line_y = model.predict_y(line_x)
-    line_y_robust = model_robust.predict_y(line_y)
-    detectedByRansac= np.column_stack([data[inliers, 0],data[inliers, 1]])
-    #print('detectedByRansac: ', detectedByRansac)
-    
-    #store the inliers into inliers array
-    if inliersArray.size == 0:            
-        inliersArray = detectedByRansac
-        #print('inliersArray: ', inliersArray)
-    elif detectedByRansac.size >=20:
-        inliersArray = np.concatenate((inliersArray,detectedByRansac))
-        #print('inliersArray: ', inliersArray)
-    #update the data with outliers and remove inliers
-    
-    
-    data = np.column_stack([data[outliers, 0],data[outliers, 1]])
-    #print("inliers: ", inliers)
-    #print("wihtout: ", data)
-    dataSize = data.size
-
-    ## If you want to see how the RANSAC works uncomment the follwoing code
-
-    ''' fig, ax = plt.subplots()
-    ####
-    #### test
-    ax.plot(data[:, 0], data[:, 1], '.r', alpha=0.6,
-            label='Outlier data')
-    ax.plot(inliersArray[:, 0], inliersArray[:, 1], '.b', alpha=0.6,
-            label='Inlier data')
-    ax.legend(loc='top left')
-    plt.show()
-    plt.pause(0.0001)  '''
-
-
-
-########### DBSCAN start ##################
-
-X = StandardScaler().fit_transform(inliersArray)
-db = DBSCAN(eps=0.3, min_samples=10).fit(X)
+X = StandardScaler().fit_transform(data)
+db = DBSCAN(eps=0.4, min_samples=5).fit(X)
 core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
 core_samples_mask[db.core_sample_indices_] = True
 labels = db.labels_  
@@ -103,6 +55,8 @@ n_noise_ = list(labels).count(-1)
 
 print('Estimated number of clusters: %d' % n_clusters_)
 print('Estimated number of noise points: %d' % n_noise_)
+# #############################################################################
+# Plot result
 
 
 # Black removed and is used for noise instead.
@@ -117,12 +71,12 @@ for k, col in zip(unique_labels, colors):
 
     class_member_mask = (labels == k)
     print('class_member_mask: ', class_member_mask)
-    xy = inliersArray[class_member_mask & core_samples_mask]
+    xy = data[class_member_mask & core_samples_mask]
     detectedByDBSCAN= np.column_stack([xy[:, 0], xy[:, 1]])
     
     if finalData.size == 0:
         finalData = detectedByDBSCAN
-    else:
+    elif detectedByDBSCAN.size >=30:
         finalData = np.concatenate((finalData,detectedByDBSCAN))
         print('finalData: ', finalData)
     #update the data with outliers and remove inliers
@@ -130,26 +84,16 @@ for k, col in zip(unique_labels, colors):
    
 
     #xy = data[class_member_mask & core_samples_mask]
-
-fig, ax = plt.subplots()
-    ####
-    #### test
-ax.plot(finalData[:, 0], finalData[:, 1], '.r', alpha=0.9,
-        label='Outlier data')
-#ax.plot(data1[:, 0], data1[:, 1], '.b', alpha=0.6,label='Inlier data')
-ax.legend(loc='top left')
-    
-#plt.plot(finalData[:, 0], finalData[:, 1], 'o', markeredgecolor='k', markersize=5)
-#plt.plot(data1[:, 0], data1[:, 1], 'o', markeredgecolor='g', markersize=5)
-
+plt.plot(finalData[:, 0], finalData[:, 1], 'o', markeredgecolor='k', markersize=5)
 plt.show()
+print("i am size: ",xy)
 
 ################
 Thetas = []
 Ranges = []
 maxRange = 0
 
-finalData = [i for i in data1 if i in finalData]
+
 
 for row in finalData:
     #print("row ",row)
@@ -189,8 +133,9 @@ for i in range(1,len(Thetas)):
     y = theta
     pt3 = (cx + x, cy - y)
     triangleCnt = np.array( [pt1, pt2, pt3] )
-    cv2.drawContours(im, [triangleCnt.astype(int)], 0, 255, -1)
+    cv2.drawContours(im, [triangleCnt.astype(int)],-1, (0,0, 255),2 )
 cv2.imwrite('result.png', im)
+print(im)
+coorner = corner_peaks(corner_harris(finalData), min_distance=1)
 
-#plt.title('Estimated number of clusters: %d' % n_clusters_)
-#plt.show()
+print(coorner)
