@@ -71,10 +71,15 @@ corner_idx = np.concatenate(([False]*(int(n_win/2)-offset), corner_idx, [False]*
 x_corner = x_data[corner_idx]
 y_corner = y_data[corner_idx]
 
+# Join up last point with first to complete the circle
+x_corner = np.append(x_corner, x_corner[0])
+y_corner = np.append(y_corner, y_corner[0])
 # plot corner point guesses
 
 plt.plot(x_data, y_data, '.')
-plt.plot(x_corner, y_corner, 'o')
+plt.plot(x_corner, y_corner)
+
+plt.plot(x_corner[-1], y_corner[-1])
 plt.title('Corner Guessing')
 plt.legend(['Raw data', 'Corner guess'])
 plt.axis('equal')
