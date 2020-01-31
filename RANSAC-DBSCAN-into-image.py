@@ -150,7 +150,7 @@ Ranges = []
 maxRange = 0
 
 finalData = [i for i in data1 if i in finalData]
-
+print(finalData)
 for row in finalData:
     #print("row ",row)
     r = row[0]
