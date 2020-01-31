@@ -4,14 +4,29 @@ import pandas as pd
 from time import time
 import matplotlib.pyplot as plt
 from skimage.measure import LineModelND, ransac
-
+import math
 import matplotlib
-#matplotlib.rcParams['figure.figsize'] = [18, 10]
+matplotlib.rcParams['figure.figsize'] = [18, 10]
 
 
-df = pd.read_csv('points.dat',delimiter=' ')
-x_data = df.values[:,0]
-y_data = df.values[:,1]
+import cv2
+
+df = pd.read_csv('capture1.csv',delimiter=',')
+
+angle = df.values[:,0]
+distance = df.values[:,1]
+
+x= angle
+y= distance
+
+cartesian = [( r*math.sin(phi*math.pi/180),r*math.cos(phi*math.pi/180)) for r, phi in zip(distance, angle)]
+#print(x,y)
+x, y = map(list, zip(*cartesian))
+#print(cartesian)
+
+# coverting this into 2d array
+x_data =  np.array(x)
+y_data =  np.array(y)
 
 plt.plot(x_data, y_data, '.', color = 'grey')
 plt.title('All Data')
