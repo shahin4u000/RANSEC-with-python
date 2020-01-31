@@ -11,7 +11,7 @@ matplotlib.rcParams['figure.figsize'] = [18, 10]
 
 import cv2
 
-df = pd.read_csv('capture1.csv',delimiter=',')
+df = pd.read_csv('capture2.csv',delimiter=',')
 
 angle = df.values[:,0]
 distance = df.values[:,1]
