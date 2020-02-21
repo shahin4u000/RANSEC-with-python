@@ -1,4 +1,3 @@
-
 import matplotlib
 from sklearn.metrics import r2_score
 from sklearn.linear_model import LinearRegression
@@ -42,18 +41,18 @@ def read_capture(file_path, verbose=True):
 
 
 # get best RANSAC fit and compute angle
-def compute_ransac_angles(x_data, y_data, n_win=10, n_trials=100):
+def compute_ransac_angles(x_data, y_data, n_win=10, n_trials=100, verbose=False):
 
     # storage of angles
     angs = []
-
+    ss = []
     startTime = time()
 
     # loop through data
     # TODO: Performance edge cases. It would be unfortunate to start our data stream at a corner
     for idx in range(len(y_data)-n_win):
 
-        # cut window
+        # cut window / loop throuh based on n_win
         x_curs = x_data[idx:idx+n_win]
         y_curs = y_data[idx:idx+n_win]
 
@@ -72,21 +71,24 @@ def compute_ransac_angles(x_data, y_data, n_win=10, n_trials=100):
         y_range_RANSAC = model_RANSAC.predict_y(x_range)
         slope = (y_range_RANSAC[1] - y_range_RANSAC[0]) / \
             (x_range[1] - x_range[0])
-
-        # TODO: We need a better way to recognize unseen walls.
+            
+        #print("y_range_RANSAC:", y_range_RANSAC)
 
         # store angle
+        
         angs.append(np.arctan(slope))
+        ss.append(slope)
 
     angs = np.array(angs)
-    angs[angs > 1.5] = angs[angs > 1.5]-np.pi
+    ss = np.array(ss)
+    angs[angs > 1.5] = angs[angs > 1.5]-np.pi    #??
 
     print('Total time: %fs' % (time()-startTime))
+    print("angs: ",ss)
+    return angs,ss
 
-    return angs
 
-
-# search for corners from angles (DEPRECATED)
+#  (DEPRECATED)
 def find_corners_from_angles(angs, x_data, y_data):
 
     # corners based on thersholding
@@ -210,8 +212,8 @@ def compile_walls(trans_slide, x_data, y_data, n_trials=100, verbose=False):
         x_range = np.array([x_curs.min(), x_curs.max()])
         y_range = model_LMND.predict_y(x_range)
         y_range_RANSAC = model_RANSAC.predict_y(x_range)
-        slope = (y_range_RANSAC[1] - y_range_RANSAC[0]) / \
-            (x_range[1] - x_range[0])
+        slope = (y_range_RANSAC[1] - y_range_RANSAC[0]
+                 ) / (x_range[1] - x_range[0])
 
         y_range_robust = model_RANSAC.predict_y(x_range)
         k = (y_range_robust[1] - y_range_robust[0])/(x_range[1] - x_range[0])
@@ -632,10 +634,10 @@ class LidarData():
         self.remove_pillars(verbose=verbose)
 
 
+# ---------------------------------------------------------------------------------------
 # ### Class examples
-
 # read and clean data
-ld1 = LidarData('scan-data-Room1-upto-50times.csv')
+'''ld1 = LidarData('scan-data-Room1-upto-50times.csv')
 ld1.plot_xy()
 ld1.apply_all_cleaning(verbose=False)
 ld1.plot_xy()
@@ -644,10 +646,10 @@ ld1.plot_xy()
 # compute preliminary wall angles
 angs = compute_ransac_angles(ld1.x, ld1.y, n_win=300, n_trials=100)
 
-print("ransac angle: ",angs)
+print("ransac angle: ", angs)
 # search for wall transition regions (corners)
 trans_slide = search_transition_regions(angs, verbose=True)
-print('trans_slide:',trans_slide)
+print('trans_slide:', trans_slide)
 
 # compute more robust wall estimations in stable regions
 wall_lines = compile_walls(trans_slide, ld1.x, ld1.y, verbose=True)
@@ -661,27 +663,32 @@ plot_corners(sects, ld1.x, ld1.y)
 # get floor plan
 lengths = compute_wall_lengths(sects, verbose=True)
 print('Wall length: %f' % np.sum(lengths))
-
+'''
 
 # total area
-area = compute_polygon_area(sects[:, 0], sects[:, 1])
-print('Floor area: %f' % area)
+#area = compute_polygon_area(sects[:, 0], sects[:, 1])
+#print('Floor area: %f' % area)
 
-
+# ---------------------------------------------------------------------------------------
 # read and clean data
-ld2 = LidarData('scan-data-Room2-upto-50times.csv')
+ld2 = LidarData('capture1.csv')
 ld2.plot_xy()
-ld2.apply_all_cleaning(verbose=True)
+#ld2.apply_all_cleaning(verbose=False)
 ld2.plot_xy()
 
 
 # compute preliminary wall angles
-angs = compute_ransac_angles(ld2.x, ld2.y, n_win=25, n_trials=50)
+angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=25, n_trials=100, verbose= True)
 
+aa =  np.degrees(angs)
+#plt.plot(aa)
+plt.plot(ss)
+plt.plot(aa)
+plt.show()
 
 # search for wall transition regions (corners)
 trans_slide = search_transition_regions(
-    angs, slide_win=10, angle_threshold=0.3, count_thresh=0, verbose=True)
+    angs, verbose=True)
 
 
 # recompute walls in stable regions
@@ -699,5 +706,5 @@ print('Wall length: %f' % np.sum(lengths))
 
 
 # total area
-area = compute_polygon_area(sects[:, 0], sects[:, 1])
-print('Floor area: %f' % area)
+#area = compute_polygon_area(sects[:, 0], sects[:, 1])
+#print('Floor area: %f' % area)
