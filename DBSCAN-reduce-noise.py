@@ -11,7 +11,7 @@ from skimage.measure import ransac, LineModelND, CircleModel
 import math
 
 
-df = pd.read_csv(r'scan-data\capture1.csv',delimiter=',')
+df = pd.read_csv('room3-position1-with-win-close.csv',delimiter=',')
 
 angle = df.values[:,0]
 distance = df.values[:,1]

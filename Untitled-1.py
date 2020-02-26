@@ -1,3 +1,4 @@
+#%%
 import matplotlib
 from sklearn.metrics import r2_score
 from sklearn.linear_model import LinearRegression
@@ -16,7 +17,7 @@ from IPython import get_ipython
 
 matplotlib.rcParams['figure.figsize'] = (18.0, 10.0)
 
-
+#%%
 # read data csv
 def read_capture(file_path, verbose=True):
     df = pd.read_csv(file_path, delimiter=',', header=None)
@@ -39,7 +40,7 @@ def read_capture(file_path, verbose=True):
 
     return x_data, y_data
 
-
+#%%
 # get best RANSAC fit and compute angle
 def compute_ransac_angles(x_data, y_data, n_win=10, n_trials=100, verbose=False):
 
@@ -80,14 +81,15 @@ def compute_ransac_angles(x_data, y_data, n_win=10, n_trials=100, verbose=False)
         ss.append(slope)
 
     angs = np.array(angs)
+    #print("before angs:",angs)
     ss = np.array(ss)
     angs[angs > 1.5] = angs[angs > 1.5]-np.pi    #??
-
+    #print(" angs:",angs)
     print('Total time: %fs' % (time()-startTime))
-    print("angs: ",ss)
+    #print("angs: ",ss)
     return angs,ss
 
-
+#%%
 #  (DEPRECATED)
 def find_corners_from_angles(angs, x_data, y_data):
 
@@ -117,12 +119,12 @@ def find_corners_from_angles(angs, x_data, y_data):
     plt.axis('equal')
     plt.show()
 
-
+#%%
 def distance(x1, y1, x2, y2):
     # compute cartesian distance
     return np.sqrt((x1-x2)**2 + (y1-y2)**2)
 
-
+#%%
 # compute intersection of two lines
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
@@ -140,7 +142,7 @@ def line_intersection(line1, line2):
     y = det(d, ydiff) / div
     return x, y
 
-
+#%%
 # pad array
 def fill_arr(arr, val, n, offset=0):
     fill_n = n - len(arr)
@@ -148,7 +150,7 @@ def fill_arr(arr, val, n, offset=0):
         ([val]*int(np.floor(fill_n/2)+offset), arr, [val]*int(np.ceil(fill_n/2)-offset)))
     return ret
 
-
+#%%
 # look for angle regions where we are transitioning from one wall to another
 def search_transition_regions(angs, slide_win=40, angle_threshold=0.8, count_thresh=1, verbose=False):
     trans_idx = np.abs(np.diff(angs)) > angle_threshold
@@ -167,7 +169,7 @@ def search_transition_regions(angs, slide_win=40, angle_threshold=0.8, count_thr
 
     return trans_slide
 
-
+#%%
 # clean the wall predictions using RANSAC
 def compile_walls(trans_slide, x_data, y_data, n_trials=100, verbose=False):
     # the idea of this function is to compute RANSAC lines on stable regions (walls) as opposed to unstable corners
@@ -260,7 +262,7 @@ def compile_walls(trans_slide, x_data, y_data, n_trials=100, verbose=False):
     wall_lines = np.array(wall_lines)
     return wall_lines
 
-
+#%%
 def get_slope(p1, p2):
     return (p2[1]-p1[1]) / (p2[0]-p1[0])
 
@@ -296,7 +298,7 @@ def plot_corners(sects, x_data, y_data):
     plt.axis('equal')
     plt.show()
 
-
+#%%
 # compute wall lengths
 def compute_wall_lengths(sects, verbose=False):
 
@@ -335,7 +337,7 @@ def moving_average(a, n=10):
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
-
+##Note deprecated
 # compute moving standard deviation
 def moving_std(a, n=10):
     ret = np.zeros(len(a)-n+1)
@@ -437,13 +439,14 @@ def detect_pillar(x, y, verbose=False):
     return heu < 150, p, radius
 
 
+#### Note Deprecated
 # attempt to fit points to line
 def fit_points_to_line(p1, p2, xs):
     m = (p2[1]-p1[1]) / (p2[0]-p1[0])
     x_diffs = xs - p1[0]
     return m*x_diffs + p1[1]
 
-
+#### Note Deprecated
 # compute nearest distance from point to line
 def perpendicular_distance(p1, p2, p3):
     # distance of p3 to line defined by p1 and p2
@@ -669,27 +672,32 @@ print('Wall length: %f' % np.sum(lengths))
 #area = compute_polygon_area(sects[:, 0], sects[:, 1])
 #print('Floor area: %f' % area)
 
+
+#%%
 # ---------------------------------------------------------------------------------------
 # read and clean data
-ld2 = LidarData('capture1.csv')
-ld2.plot_xy()
+ld2 = LidarData('room4-position2-with-win-close.csv')
+ld2.apply_max_range()
+ld2.mean_and_filter_angles()
+ld2.remove_lone_points()
+ld2.remove_small_clusters()
+ld2.remove_pillars()
 #ld2.apply_all_cleaning(verbose=False)
 ld2.plot_xy()
-
-
+#%%
 # compute preliminary wall angles
-angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=25, n_trials=100, verbose= True)
+angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=80
+                                , n_trials=100, verbose= True)
 
 aa =  np.degrees(angs)
 #plt.plot(aa)
-plt.plot(ss)
+#plt.plot(ss)
 plt.plot(aa)
 plt.show()
-
+#%%
 # search for wall transition regions (corners)
 trans_slide = search_transition_regions(
     angs, verbose=True)
-
 
 # recompute walls in stable regions
 wall_lines = compile_walls(trans_slide, ld2.x, ld2.y, verbose=True)
