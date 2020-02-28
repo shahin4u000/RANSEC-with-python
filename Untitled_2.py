@@ -13,9 +13,8 @@ import numpy as np
 import math
 import os
 from IPython import get_ipython
-from bokeh.io import output_notebook, show
-from bokeh.plotting import figure
-p = figure(plot_width=400, plot_height=400)
+
+
 matplotlib.rcParams['figure.figsize'] = (18.0, 10.0)
 
 #%%
@@ -43,7 +42,7 @@ def read_capture(file_path, verbose=True):
 
 #%%
 # get best RANSAC fit and compute angle
-def compute_ransac_angles(x_data, y_data, n_win=10, n_trials=100, verbose=False):
+def compute_ransac_angles(x_data, y_data, n_win=80, n_trials=100, verbose=False):
     
     # storage of angles
     angs = []
@@ -154,14 +153,14 @@ def fill_arr(arr, val, n, offset=0):
 
 #%%
 # look for angle regions where we are transitioning from one wall to another
-def search_transition_regions(angs, slide_win=25, angle_threshold=0.3, count_thresh=0, verbose=False):
+def search_transition_regions(angs, slide_win=25, angle_threshold=0.3, count_thresh=0.8, verbose=False):
     trans_idx = np.abs(np.diff(angs)) > angle_threshold
     trans_slide = []
 
     # loop to find regions of high counts of transitions
     for idx in range(len(trans_idx)-slide_win):
         trans_slide.append(
-            np.sum(trans_idx[idx:(idx+slide_win)]) > count_thresh)
+            np.sum(trans_idx[idx:(idx+slide_win)]) < count_thresh)
 
     if verbose:
         plt.plot(trans_idx, '.')
@@ -676,11 +675,11 @@ print('Wall length: %f' % np.sum(lengths))
 
 
 #%%
-#*** room4-position2-with-win-close.csv
-#*** room4-position1-with-win-close.csv
-#*** room3-position1-with-win-close.csv
-
 # =============================================================================
+# # room4-position2-with-win-close.csv
+# # room4-position1-with-win-close.csv
+# # room3-position1-with-win-close.csv
+# 
 # ld2 = LidarData('room4-position2-with-win-close.csv')
 # ld2.apply_max_range()
 # ld2.mean_and_filter_angles()
@@ -689,7 +688,6 @@ print('Wall length: %f' % np.sum(lengths))
 # ld2.remove_pillars()
 # #ld2.apply_all_cleaning(verbose=False)
 # ld2.plot_xy()
-# print((np.sum(np.abs(ld2.x))/len(ld2.x) + np.sum(np.abs(ld2.x))/len(ld2.y))/2)
 # #%%
 # # compute preliminary wall angles
 # angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=80
@@ -731,23 +729,18 @@ print('Wall length: %f' % np.sum(lengths))
 
 
 #%%
-ld2 = LidarData('room3-position1-with-win-open.csv')
-# =============================================================================
-# ld2.apply_max_range()
-# ld2.mean_and_filter_angles()
-# ld2.remove_lone_points()
-# ld2.remove_small_clusters()
-# ld2.remove_pillars()
-# =============================================================================
-ld2.apply_all_cleaning(verbose=False)
+ld2 = LidarData('room2-position1-with-win-open.csv')
+ld2.apply_max_range()
+ld2.mean_and_filter_angles()
+ld2.remove_lone_points()
+ld2.remove_small_clusters()
+ld2.remove_pillars()
+#ld2.apply_all_cleaning(verbose=False)
 ld2.plot_xy()
 #%%
 # compute preliminary wall angles
-a = np.array([np.abs(ld2.x), np.abs(ld2.y)])
-
-print(np.mean(a))
-
-angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=75
+print(np.sum([ld2.x, ld2.y]))
+angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=10
                                 , n_trials=100, verbose= True)
 
 aa =  np.degrees(angs)
