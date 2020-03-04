@@ -731,7 +731,7 @@ print('Wall length: %f' % np.sum(lengths))
 
 
 #%%
-ld2 = LidarData('room3-position1-with-win-open.csv')
+ld2 = LidarData('room3-position1-with-win-close.csv')
 # =============================================================================
 # ld2.apply_max_range()
 # ld2.mean_and_filter_angles()
@@ -747,7 +747,7 @@ a = np.array([np.abs(ld2.x), np.abs(ld2.y)])
 
 print(np.mean(a))
 
-angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=75
+angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=80
                                 , n_trials=100, verbose= True)
 
 aa =  np.degrees(angs)
