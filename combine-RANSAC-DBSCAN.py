@@ -10,7 +10,7 @@ from sklearn.datasets import make_blobs
 from sklearn.preprocessing import StandardScaler
 
 
-df = pd.read_csv('capture2.csv',delimiter=',')
+df = pd.read_csv('room5-pos1-with-win-open-less-noise.csv',delimiter=',')
 angle = df.values[:,0]
 distance = df.values[:,1]
 

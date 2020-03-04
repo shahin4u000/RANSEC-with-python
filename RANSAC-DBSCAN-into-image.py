@@ -9,12 +9,63 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from skimage.measure import ransac, LineModelND, CircleModel
 import math
-import cv2
+#import cv2
+import matplotlib
 
-df = pd.read_csv(r'scan-data\capture1.csv',delimiter=',')
 
-angle = df.values[:,0]
-distance = df.values[:,1]
+
+matplotlib.rcParams['figure.figsize'] = (18.0, 10.0)
+def compute_ransac_angles(x_data, y_data, n_win=10, n_trials=100, verbose=False):
+
+    # storage of angles
+    angs = []
+    ss = []
+    startTime = time()
+
+    # loop through data
+    # TODO: Performance edge cases. It would be unfortunate to start our data stream at a corner
+    for idx in range(len(y_data)-n_win):
+
+        # cut window / loop throuh based on n_win
+        x_curs = x_data[idx:idx+n_win]
+        y_curs = y_data[idx:idx+n_win]
+
+        # setup RANSAC
+        model_LMND = LineModelND()
+        points = np.column_stack([x_curs, y_curs])
+        model_LMND.estimate(points)
+
+        # RANSAC
+        model_RANSAC, _ = ransac(
+            points, LineModelND, min_samples=2, residual_threshold=5, max_trials=n_trials)
+
+        # compute lines
+        x_range = np.array([x_curs.min(), x_curs.max()])
+        y_range = model_LMND.predict_y(x_range)
+        y_range_RANSAC = model_RANSAC.predict_y(x_range)
+        slope = (y_range_RANSAC[1] - y_range_RANSAC[0]) / \
+            (x_range[1] - x_range[0])
+            
+        #print("y_range_RANSAC:", y_range_RANSAC)
+
+        # store angle
+        
+        angs.append(np.arctan(slope))
+        ss.append(slope)
+
+    angs = np.array(angs)
+    ss = np.array(ss)
+    angs[angs > 1.5] = angs[angs > 1.5]-np.pi    #??
+
+    print('Total time: %fs' % (time()-startTime))
+    #print("angs: ",ss)
+    return angs,ss
+
+
+df = pd.read_csv('room4-position2-with-win-close.csv',delimiter=',')
+
+angle = df.values[:600,0]
+distance = df.values[:600,1]
 
 x= angle
 y= distance
@@ -47,7 +98,7 @@ while dataSize >=20:
     model.estimate(data)
     # robustly fit line only using inlier data with RANSAC algorithm
     model_robust, inliers = ransac(data, LineModelND, min_samples=2,
-                            residual_threshold=50, max_trials=10000)
+                            residual_threshold=60, max_trials=100)
     outliers = inliers == False
     # generate coordinates of estimated models
     line_x = np.arange(x.min(), x.max()) #[:, np.newaxis]
@@ -60,7 +111,7 @@ while dataSize >=20:
     if inliersArray.size == 0:            
         inliersArray = detectedByRansac
         #print('inliersArray: ', inliersArray)
-    elif detectedByRansac.size >=25:
+    elif detectedByRansac.size >=20:
         inliersArray = np.concatenate((inliersArray,detectedByRansac))
         #print('inliersArray: ', inliersArray)
     #update the data with outliers and remove inliers
@@ -124,15 +175,25 @@ for k, col in zip(unique_labels, colors):
         finalData = detectedByDBSCAN
     else:
         finalData = np.concatenate((finalData,detectedByDBSCAN))
-        print('finalData: ', finalData)
+        #print('finalData: ', finalData)
     #update the data with outliers and remove inliers
     
    
 
     #xy = data[class_member_mask & core_samples_mask]
-plt.plot(finalData[:, 0], finalData[:, 1], 'o', markeredgecolor='k', markersize=5)
+
+fig, ax = plt.subplots()
+    ####
+    #### test
+ax.plot(finalData[:, 0], finalData[:, 1], '.r', alpha=0.9,
+        label='Outlier data')
+#ax.plot(data1[:, 0], data1[:, 1], '.b', alpha=0.6,label='Inlier data')
+ax.legend(loc='top left')
+    
+#plt.plot(finalData[:, 0], finalData[:, 1], 'o', markeredgecolor='k', markersize=5)
+#plt.plot(data1[:, 0], data1[:, 1], 'o', markeredgecolor='g', markersize=5)
+
 plt.show()
-print("i am size: ",xy)
 
 ################
 Thetas = []
@@ -141,16 +202,36 @@ maxRange = 0
 
 finalData = [i for i in data1 if i in finalData]
 
+x = finalData[:, 0]
+y = finalData[:, 1]
+x=  np.array(x)
+y=  np.array(y)
+x_data = x.reshape(-1, 1)
+y_data = y.reshape(-1, 1)
+
+compute_ransac_angles(x_data,y_data)
+
+
+
+
+
+
+
+
+
+'''
+#########--------------------------------------------------------------------------
+print(finalData)
 for row in finalData:
     #print("row ",row)
     r = row[0]
     theta = row[1]
     
     #print(f'DEBUG: theta: {theta}, range: {r}')
-    if r> maxRange:
-        maxRange = r
-        if theta > maxRange:
-            maxRange = theta
+    if abs(r)> maxRange:
+        maxRange = abs(r)
+    if abs(theta) > maxRange:
+        maxRange =abs(theta)
     Ranges.append(r)
     Thetas.append(theta)
 
@@ -184,3 +265,6 @@ cv2.imwrite('result.png', im)
 
 #plt.title('Estimated number of clusters: %d' % n_clusters_)
 #plt.show()
+
+'''
+

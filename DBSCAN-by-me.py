@@ -11,7 +11,7 @@ from skimage.measure import ransac, LineModelND, CircleModel
 import math
 import cv2
 
-df = pd.read_csv('capture3.csv',delimiter=',')
+df = pd.read_csv('capture1.csv',delimiter=',')
 
 angle = df.values[:,0]
 distance = df.values[:,1]
@@ -35,7 +35,7 @@ y=y.reshape(-1, 1)
 data = np.column_stack([x, y])
 
 X = StandardScaler().fit_transform(data)
-db = DBSCAN(eps=0.3, min_samples=10).fit(X)
+db = DBSCAN(eps=0.4, min_samples=5).fit(X)
 core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
 core_samples_mask[db.core_sample_indices_] = True
 labels = db.labels_  
@@ -95,10 +95,10 @@ for row in finalData:
     theta = row[1]
     
     #print(f'DEBUG: theta: {theta}, range: {r}')
-    if r> maxRange:
-        maxRange = r
-        if theta > maxRange:
-            maxRange = theta
+    if abs(r)> maxRange:
+        maxRange = abs(r)
+    if abs(theta) > maxRange:
+        maxRange =abs(theta)
     Ranges.append(r)
     Thetas.append(theta)
 
