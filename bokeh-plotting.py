@@ -1,19 +1,27 @@
+from math import sin
+from random import random
 
-from bokeh.plotting import figure, output_file, show
+from bokeh.io import output_file, show
+from bokeh.models import ColumnDataSource, HoverTool, LinearColorMapper
+from bokeh.palettes import plasma
+from bokeh.plotting import figure
+from bokeh.transform import transform
 
-# prepare some data
-x = [1, 2, 3, 4, 5]
-y = [6, 7, 2, 4, 5]
+list_x = list(range(100))
+list_y = [random() + sin(i / 20) for i in range(100)]
+desc = [str(i) for i in list_y]
 
-# output to static HTML file
-output_file("lines.html")
+source = ColumnDataSource(data=dict(x=list_x, y=list_y, desc=desc))
+hover = HoverTool(tooltips=[
+    ("index", "$index"),
+    ("(x,y)", "(@x, @y)"),
+    ('desc', '@desc'),
+])
+mapper = LinearColorMapper(palette=plasma(256), low=min(list_y), high=max(list_y))
 
+p = figure(plot_width=400, plot_height=400, tools=[hover], title="Belgian test")
+p.circle('x', 'y', size=10, source=source,
+         fill_color=transform('y', mapper))
 
-# create a new plot with a title and axis labels
-p = figure(title="simple line example", x_axis_label='x', y_axis_label='y')
-
-# add a line renderer with legend and line thickness
-p.line(x, y, legend="Temp.", line_width=2)
-
-# show the results
+output_file('test.html')
 show(p)

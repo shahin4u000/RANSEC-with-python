@@ -13,8 +13,13 @@ import numpy as np
 import math
 import os
 from IPython import get_ipython
+
+# import bokeh
 from bokeh.io import output_notebook, show
 from bokeh.plotting import figure
+from bokeh.layouts import column
+from bokeh.models import CustomJS, ColumnDataSource, Slider
+from bokeh.plotting import Figure, output_file, show
 p = figure(plot_width=400, plot_height=400)
 matplotlib.rcParams['figure.figsize'] = (18.0, 10.0)
 
@@ -741,6 +746,21 @@ ld2 = LidarData('room3-position1-with-win-close.csv')
 # =============================================================================
 ld2.apply_all_cleaning(verbose=False)
 ld2.plot_xy()
+
+
+#%%
+##bokeh
+output_file("legend.html")
+tools = "pan,wheel_zoom,box_zoom,reset,hover"
+data = {'x_values': ld2.x,
+        'y_values': ld2.y}
+
+source = ColumnDataSource(data=data)
+TOOLTIPS = [('$size', 10)]
+p = figure(tools=tools)
+p.circle(x='x_values', y='y_values',hover_color="red", tooltips="$size : 10", source=source)
+show(p)
+
 #%%
 # compute preliminary wall angles
 a = np.array([np.abs(ld2.x), np.abs(ld2.y)])
