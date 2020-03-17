@@ -1,6 +1,6 @@
 #%%
 from bokeh.layouts import column
-from bokeh.models import CustomJS, ColumnDataSource, Slider
+from bokeh.models import Button, CustomJS, ColumnDataSource, Slider
 from bokeh.plotting import figure, output_file, show
 
 output_file("callback.html")
@@ -28,7 +28,11 @@ callback = CustomJS(args=dict(source=source1), code="""
 slider = Slider(start=0.1, end=4, value=1, step=.1, title="power")
 slider.js_on_change('value', callback)
 plot.js_on_event('tap', callback)
-layout = column(slider, plot)
+button = Button(label="Foo", button_type="success")
+
+
+
+layout = column(slider,button, plot)
 
 show(layout)
 
