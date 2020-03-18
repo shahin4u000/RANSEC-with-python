@@ -1,12 +1,12 @@
 #%%
 from bokeh.layouts import column
-from bokeh.models import Button, CustomJS, ColumnDataSource, Slider
+from bokeh.models import Button, CustomJS, ColumnDataSource, Slider,PointDrawTool
 from bokeh.plotting import figure, output_file, show
 
 output_file("callback.html")
 
-x = [1, 2, 2,3, 4, 5, 6, 6, 8]
-y = [4, 50, 0,76, 8, 0, 50, 8]
+x = [1, 2,  2, 2,  2,  3, 3,  5, 5,  6, 6 ,6,6,6,6,6]
+y = [4, 50, 0, 10, 20, 0, 50, 0, 50, 0, 50,10,120,30,40,50]
 a = []
 b = []
 source = ColumnDataSource(data=dict(x=x, y=y))
@@ -16,9 +16,10 @@ plot.toolbar.logo = None
 
 plot.scatter('x', 'y', source=source,
              line_color='green', fill_alpha=0.6, size=5)
-plot.scatter('x', 'y', source=source1,
+customPlot= plot.scatter('x', 'y', source=source1,
              line_color='blue', fill_alpha=0.3, size=10)
-plot.patch('x', 'y',source=source1, line_width=3, color="navy", alpha=0.5)
+plot.patch('x', 'y',source=source1, line_width=3, color="navy", alpha=0.1)
+draw_tool = PointDrawTool(renderers=[customPlot])
 
 callback = CustomJS(args=dict(xy=source1, ab=source), code="""
         var data = xy.data;
@@ -49,7 +50,8 @@ slider = Slider(start=0.1, end=4, value=1, step=.1, title="power")
 slider.js_on_change('value', callback)
 plot.js_on_event('tap', callback)
 layout = column(slider, plot)
-
+plot.add_tools(draw_tool)
+plot.toolbar.active_tap = draw_tool
 show(layout)
 
 # %%
@@ -95,6 +97,7 @@ show(modify_doc)
 
 #%%
 from bokeh.plotting import figure, output_file, show
+from bokeh.models.tools import PointDrawTool
 
 x = [1, 2, 3, 5, 4]
 y = [6, 7, 8, 3,7]
@@ -104,9 +107,9 @@ output_file("multiple.html")
 p = figure(plot_width=400, plot_height=400)
 
 # add both a line and circles on the same plot
-p.patch(x, y, line_width=2)
-p.circle(x, y, fill_color="white", size=8)
-
+c1 = p.patch(x, y, line_width=2)
+c2 = p.circle(x, y, fill_color="white", size=8)
+tool = PointDrawTool(renderers=[c1, c2])
 show(p)
 
 # %%

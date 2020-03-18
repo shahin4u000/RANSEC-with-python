@@ -21,6 +21,9 @@ from bokeh.layouts import column
 from bokeh.models import CustomJS, ColumnDataSource, Slider
 from bokeh.plotting import Figure, output_file, show
 from bokeh.models.callbacks import CustomJS
+from bokeh.layouts import column
+from bokeh.models import Button, CustomJS, ColumnDataSource, Slider,PointDrawTool
+from bokeh.plotting import figure, output_file, show
 
 p = figure(plot_width=400, plot_height=400)
 matplotlib.rcParams['figure.figsize'] = (18.0, 10.0)
@@ -752,25 +755,60 @@ ld2.plot_xy()
 
 #%%
 ##bokeh https://thedatafrog.com/en/interactive-visualization-bokeh-jupyter/
-output_file("legend.html")
-tools = "pan,wheel_zoom,box_zoom,reset,hover"
+
+output_file("callback.html")
+
+plot = figure(plot_width=400, plot_height=400)
+plot.toolbar.logo = None
+a = []
+b = []
+tools = "pan,wheel_zoom,reset,hover"
 data = {'x_values': ld2.x,
         'y_values': ld2.y}
 
 source = ColumnDataSource(data=data)
+source1 = ColumnDataSource(data=dict(x=a, y=b))
+lidarPlot= plot.circle(x='x_values', y='y_values',hover_color="red", source=source)
 
-callback = CustomJS(code="""
-    console.log("hi tab is working")
-// the event that triggered the callback is cb_obj:
-// The event type determines the relevant attributes
-console.log(cb_obj)
-""")
+customPlot= plot.scatter('x', 'y', source=source1,
+             line_color='blue', fill_alpha=0.3, size=10)
+plot.patch('x', 'y',source=source1, line_width=3, color="navy", alpha=0.1)
+draw_tool = PointDrawTool(renderers=[customPlot])
+
+callback = CustomJS(args=dict(xy=source1, ab=source), code="""
+        var data = xy.data;
+        var data2 = ab.data;
+        
+        var f = cb_obj.value
+        console.log(data, data2)
+        var x = data['x'];
+        var y = data['y'];
+        var a = data2['x'];
+        var b = data2['y'];
+        
+        if(a.includes(cb_obj.x) && b.includes(cb_obj.y)) {
+            x.push(cb_obj.x)
+            y.push(cb_obj.y)
+            
+        } else {
+            x.push(cb_obj.x)
+            y.push(cb_obj.y)
+            console.log(cb_obj.x)
+        }
+        
+        
+        xy.change.emit();
+    """)
+
+slider = Slider(start=0.1, end=4, value=1, step=.1, title="power")
+slider.js_on_change('value', callback)
+plot.js_on_event('tap', callback)
+layout = column(slider, plot)
+plot.add_tools(draw_tool)
+plot.toolbar.active_tap = draw_tool
+show(layout)
 
 
-p.circle(x='x_values', y='y_values',hover_color="red", source=source)
-
-p.js_on_event("tap", callback)
-show(p)
 
 #%%
 # compute preliminary wall angles
