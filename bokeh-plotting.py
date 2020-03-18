@@ -1,14 +1,4 @@
-# %%
-from bokeh.plotting import figure
-from bokeh.models import Panel, Tabs
-from bokeh.io import output_file, show
-import pandas as pd
-import numpy as np
-from docutils.nodes import figure
-from bokeh.models.tools import HoverTool
-from bokeh.plotting import ColumnDataSource
-from bokeh.models import Button, TextInput
-from bokeh.layouts import grid
+#%%
 from bokeh.layouts import column
 from bokeh.models import Button, CustomJS, ColumnDataSource, Slider
 from bokeh.plotting import figure, output_file, show
@@ -55,12 +45,10 @@ callback = CustomJS(args=dict(xy=source1, ab=source), code="""
         xy.change.emit();
     """)
 
-#slider.js_on_change('value', callback)
+slider = Slider(start=0.1, end=4, value=1, step=.1, title="power")
+slider.js_on_change('value', callback)
 plot.js_on_event('tap', callback)
-button = Button(label="Foo", button_type="success")
-
-
-layout = column(button, plot)
+layout = column(slider, plot)
 
 show(layout)
 
@@ -104,6 +92,22 @@ def modify_doc(doc):
 
 
 show(modify_doc)
+
+#%%
+from bokeh.plotting import figure, output_file, show
+
+x = [1, 2, 3, 5, 4]
+y = [6, 7, 8, 3,7]
+
+output_file("multiple.html")
+
+p = figure(plot_width=400, plot_height=400)
+
+# add both a line and circles on the same plot
+p.patch(x, y, line_width=2)
+p.circle(x, y, fill_color="white", size=8)
+
+show(p)
 
 # %%
 
