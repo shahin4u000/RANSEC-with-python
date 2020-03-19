@@ -690,29 +690,28 @@ print('Wall length: %f' % np.sum(lengths))
 #*** room4-position1-with-win-close.csv
 #*** room3-position1-with-win-close.csv
 
-# =============================================================================
-# ld2 = LidarData('room4-position2-with-win-close.csv')
-# ld2.apply_max_range()
-# ld2.mean_and_filter_angles()
-# ld2.remove_lone_points()
-# ld2.remove_small_clusters()
-# ld2.remove_pillars()
-# #ld2.apply_all_cleaning(verbose=False)
-# ld2.plot_xy()
-# print((np.sum(np.abs(ld2.x))/len(ld2.x) + np.sum(np.abs(ld2.x))/len(ld2.y))/2)
-# #%%
-# # compute preliminary wall angles
-# angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=80
-#                                 , n_trials=100, verbose= True)
-# 
-# aa =  np.degrees(angs)
-# #plt.plot(aa)
-# #plt.plot(ss)
-# plt.plot(aa)
-# plt.show()
-# trans_slide = search_transition_regions(
-#     angs, verbose=True)
-# =============================================================================
+ld2 = LidarData('room4-position2-with-win-close.csv')
+ld2.apply_max_range()
+ld2.mean_and_filter_angles()
+ld2.remove_lone_points()
+ld2.remove_small_clusters()
+ld2.remove_pillars()
+#ld2.apply_all_cleaning(verbose=False)
+ld2.plot_xy()
+print((np.sum(np.abs(ld2.x))/len(ld2.x) + np.sum(np.abs(ld2.x))/len(ld2.y))/2)
+#%%
+# compute preliminary wall angles
+angs,ss = compute_ransac_angles(ld2.x, ld2.y, n_win=80
+                                , n_trials=100, verbose= True)
+
+aa =  np.degrees(angs)
+#plt.plot(aa)
+#plt.plot(ss)
+plt.plot(aa)
+plt.show()
+trans_slide = search_transition_regions(
+    angs, verbose=True)
+
 #%% 
 # =============================================================================
 # ld2 = LidarData('room3-position1-with-win-close.csv')
@@ -741,7 +740,7 @@ print('Wall length: %f' % np.sum(lengths))
 
 
 #%%
-ld2 = LidarData('room3-position1-with-win-close.csv')
+''' ld2 = LidarData('room3-position1-with-win-close.csv')
 # =============================================================================
 # ld2.apply_max_range()
 # ld2.mean_and_filter_angles()
@@ -750,7 +749,7 @@ ld2 = LidarData('room3-position1-with-win-close.csv')
 # ld2.remove_pillars()
 # =============================================================================
 ld2.apply_all_cleaning(verbose=False)
-ld2.plot_xy()
+ld2.plot_xy() '''
 
 
 #%%
@@ -772,7 +771,7 @@ lidarPlot= plot.circle(x='x_values', y='y_values',hover_color="red", source=sour
 
 customPlot= plot.scatter('x', 'y', source=source1,
              line_color='blue', fill_alpha=0.3, size=10)
-plot.patch('x', 'y',source=source1, line_width=3, color="navy", alpha=0.1)
+plot.patch('x', 'y',source=source1, line_width=5, color="red", alpha=0.5)
 draw_tool = PointDrawTool(renderers=[customPlot])
 
 callback = CustomJS(args=dict(xy=source1, ab=source), code="""
